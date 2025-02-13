@@ -50,6 +50,7 @@ namespace WalletHomework.RestApi.Controllers
             item.Password = account.Password;
             item.TransactionId = account.TransactionId;
             item.Balance = account.Balance;
+            item.MobileNo = account.MobileNo;
             item.PinNo = account.PinNo;
             _db.Entry(item).State=EntityState.Modified;
             _db.SaveChanges();
@@ -70,6 +71,10 @@ namespace WalletHomework.RestApi.Controllers
             if (!string.IsNullOrEmpty(account.Password))
             {
                 item.Password = account.Password;
+            }
+            if (!string.IsNullOrEmpty(account.MobileNo))
+            {
+                item.MobileNo = account.MobileNo;
             }
             if (!string.IsNullOrEmpty(account.TransactionId))
             {
