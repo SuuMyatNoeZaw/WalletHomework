@@ -51,6 +51,8 @@ namespace WalletHomework.RestApi.Controllers
             item.TransactionId = account.TransactionId;
             item.Balance = account.Balance;
             item.PinNo = account.PinNo;
+            _db.Entry(item).State=EntityState.Modified;
+            _db.SaveChanges();
             return Ok(item);
         }
         [HttpPatch]
@@ -81,7 +83,8 @@ namespace WalletHomework.RestApi.Controllers
             {
                 item.PinNo = account.PinNo;
             }
-            
+            _db.Entry(item).State = EntityState.Modified;
+            _db.SaveChanges();
             return Ok(item);
         }
         [HttpDelete("{id}")]
@@ -93,6 +96,8 @@ namespace WalletHomework.RestApi.Controllers
                 return NotFound();
             }
          var result = _db.TblAccounts.Remove(item);
+            _db.Entry(item).State = EntityState.Deleted;
+            _db.SaveChanges();
             return Ok(result);
         }
     }

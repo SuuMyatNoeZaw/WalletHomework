@@ -20,90 +20,98 @@ namespace WalletHomework.RestApi.Controllers
         public IActionResult GetByID(int id)
         {
             
-            var list = _db.TblTransactions.Where(x=>x.AccountID==id).ToList();
-            if(list.Any())
+            var list = _db.TblTransactions.Where(x=>x.AccountId==id).ToList();
+            if(list is null)
             {
                 return BadRequest("Use Account ID");
             }
             return Ok(list);
         }
         [HttpPost("{Deposit}")]
-        public IActionResult Deposit(int id,decimal amount)
+        public IActionResult Deposit(int id,decimal amount,string password)
         {
-            var item=_db.TblAccounts.AsNoTracking().FirstOrDefault(x=>x.AccountId==id);
-            if (item is not null || amount > 0)
+            var item=_db.TblAccounts.AsNoTracking().FirstOrDefault(x=>x.AccountId==id && x.Password==password);
+            if (item is not null && amount > 0)
             {
                 item.Balance += amount;
             }
             else return BadRequest("Something wrong");
             TblTransaction tblTransaction = new TblTransaction()
             {
-                AccountID = item.AccountId,
+                AccountId = item.AccountId,
                 Amount = amount,
+                About="Deposit",
                 Date = DateTime.Now,
 
             };
             _db.TblTransactions.Add(tblTransaction);
+            _db.Entry(item).State = EntityState.Modified;
             _db.SaveChanges();
 
-            return Ok(item);
+            return Ok("You Deposit " + amount +" successfully");
         }
         [HttpPatch("{Withdraw}")]
-        public IActionResult Withdraw(int id, decimal amount)
+        public IActionResult Withdraw(int id, decimal amount, string password)
         {
-            var item = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id);
-            if (item is not null || amount > 0 || item.Balance >= amount)
+            var item = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id && x.Password==password);
+            if (item is not null && amount > 0 && item.Balance >= amount)
             {
                 item.Balance -= amount;
             }
             else return BadRequest("Something Wrong");
             TblTransaction tblTransaction = new TblTransaction()
             {
-                AccountID = item.AccountId,
+                AccountId = item.AccountId,
                 Amount = amount,
+                About="Withdraw",
                 Date = DateTime.Now,
 
             };
             _db.TblTransactions.Add(tblTransaction);
+            _db.Entry(item).State = EntityState.Modified;
             _db.SaveChanges();
 
-            return Ok(item);
+            return Ok("You Withdraw "+ amount +" successfully");
         }
         [HttpDelete("{Transfer}")]
-        public IActionResult Transfer(int id1,int id2, decimal amount)
+        public IActionResult Transfer(int id1,int id2, decimal amount, string password)
         {
-            var item1 = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id1);
+            var item1 = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id1 && x.Password==password);
             var item2 = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id2);
-            if (item1 is not null || amount > 0 || item1.Balance >= amount)
+            if (item1 is not null && amount > 0 && item1.Balance >= amount)
             {
                 item1.Balance -= amount;
             }
             else return BadRequest("Something Wrong");
             TblTransaction tblTransaction1 = new TblTransaction()
             {
-                AccountID = item1.AccountId,
+                AccountId = item1.AccountId,
                 Amount = amount,
+                About="Transfer",
                 Date = DateTime.Now,
 
             };
             _db.TblTransactions.Add(tblTransaction1);
+            _db.Entry(item1).State = EntityState.Modified;
             _db.SaveChanges();
-            if (item2 is not null || amount > 0 )
+            if (item2 is not null && amount > 0 )
             {
                 item2.Balance += amount;
             }
             else return BadRequest("Something Wrong");
             TblTransaction tblTransaction2 = new TblTransaction()
             {
-                AccountID = item2.AccountId,
+                AccountId = item2.AccountId,
                 Amount = amount,
+                About="Receive",
                 Date = DateTime.Now,
 
             };
             _db.TblTransactions.Add(tblTransaction2);
+            _db.Entry(item2).State = EntityState.Modified;
             _db.SaveChanges();
 
-            return Ok(item1);
+            return Ok("Transfer " +amount + " from "+ item1.UserName+" to "+item2.UserName);
         }
     }
 }

@@ -48,11 +48,10 @@ public partial class AppDbContext : DbContext
 
             entity.ToTable("Tbl_Transaction");
 
-            entity.Property(e => e.TransactionId)
-                .HasMaxLength(20)
-                .HasColumnName("TransactionID");
+            entity.Property(e => e.TransactionId).HasColumnName("TransactionID");
+            entity.Property(e => e.About).HasMaxLength(50);
+            entity.Property(e => e.AccountId).HasColumnName("AccountID");
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 0)");
-            entity.Property(e => e.Balance).HasColumnType("decimal(18, 0)");
             entity.Property(e => e.Date).HasColumnType("date");
         });
 
