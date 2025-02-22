@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WalletHomework.Database.Models;
+using WalletHomework.RestApi.Services;
 
 namespace WalletHomework.RestApi.Controllers
 {
@@ -27,30 +28,20 @@ namespace WalletHomework.RestApi.Controllers
             }
             return Ok(list);
         }
-        [HttpPost("{Deposit}")]
-        public IActionResult Deposit(int id,decimal amount,string password)
+        [HttpPost]
+        public IActionResult Deposit(TblTransaction tran,string password)
         {
-            var item=_db.TblAccounts.AsNoTracking().FirstOrDefault(x=>x.AccountId==id && x.Password==password);
-            if (item is not null && amount > 0)
+           WalletService walletService = new WalletService();
+            decimal amount=Convert.ToDecimal(tran.Amount);
+          int ans=  walletService.process(tran.AccountId, amount, tran.About, password);
+            
+            if(ans==1)
             {
-                item.Balance += amount;
+                return Ok("You Deposit " + amount + " successfully");
             }
-            else return BadRequest("Something wrong");
-            TblTransaction tblTransaction = new TblTransaction()
-            {
-                AccountId = item.AccountId,
-                Amount = amount,
-                About="Deposit",
-                Date = DateTime.Now,
-
-            };
-            _db.TblTransactions.Add(tblTransaction);
-            _db.Entry(item).State = EntityState.Modified;
-            _db.SaveChanges();
-
-            return Ok("You Deposit " + amount +" successfully");
+            return Ok();
         }
-        [HttpPatch("{Withdraw}")]
+        [HttpPatch]
         public IActionResult Withdraw(int id, decimal amount, string password)
         {
             var item = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id && x.Password==password);
@@ -73,7 +64,7 @@ namespace WalletHomework.RestApi.Controllers
 
             return Ok("You Withdraw "+ amount +" successfully");
         }
-        [HttpDelete("{Transfer}")]
+        [HttpDelete]
         public IActionResult Transfer(int id1,int id2, decimal amount, string password)
         {
             var item1 = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id1 && x.Password==password);
