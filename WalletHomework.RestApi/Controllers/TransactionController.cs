@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WalletHomework.Database.Models;
-using WalletHomework.RestApi.Services;
+
 
 namespace WalletHomework.RestApi.Controllers
 {
@@ -29,17 +29,27 @@ namespace WalletHomework.RestApi.Controllers
             return Ok(list);
         }
         [HttpPost]
-        public IActionResult Deposit(TblTransaction tran,string password)
+        public IActionResult Deposit(int id, decimal amount, string password)
         {
-           WalletService walletService = new WalletService();
-            decimal amount=Convert.ToDecimal(tran.Amount);
-          int ans=  walletService.process(tran.AccountId, amount, tran.About, password);
-            
-            if(ans==1)
+            var item = _db.TblAccounts.AsNoTracking().FirstOrDefault(x => x.AccountId == id && x.Password == password);
+            if (item is not null && amount > 0)
             {
-                return Ok("You Deposit " + amount + " successfully");
+                item.Balance += amount;
             }
-            return Ok();
+            else return BadRequest("Something Wrong");
+            TblTransaction tblTransaction = new TblTransaction()
+            {
+                AccountId = item.AccountId,
+                Amount = amount,
+                About = "Deposit",
+                Date = DateTime.Now,
+
+            };
+            _db.TblTransactions.Add(tblTransaction);
+            _db.Entry(item).State = EntityState.Modified;
+            _db.SaveChanges();
+
+            return Ok("You Deposit " + amount + " successfully");
         }
         [HttpPatch]
         public IActionResult Withdraw(int id, decimal amount, string password)
